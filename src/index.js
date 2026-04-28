@@ -1,7 +1,33 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 
-const DB_FILE = path.join(__dirname, '../cities.db');
+const getDatabasePath = () => {
+    // 1. Construct the standard HOP models path
+    let homedir = os.homedir();
+    let modelsPath = '';
+
+    if (os.platform() === 'win32') {
+        let splitLast = homedir.split('\\');
+        let username = splitLast[splitLast.length - 1];
+        modelsPath = path.join('C:', 'Users', username, 'hop-models');
+    } else {
+        modelsPath = path.join(homedir, '.hop-models');
+    }
+
+    const homeDbPath = path.join(modelsPath, 'place', 'cities.db');
+
+    // 2. Check if the home directory version exists
+    if (fs.existsSync(homeDbPath)) {
+        return homeDbPath;
+    }
+
+    // 3. Fallback to the local node_modules version (Dev mode / Isolated use)
+    return path.join(__dirname, '../cities.db');
+};
+
+const DB_FILE = getDatabasePath();
 let db;
 
 /**
