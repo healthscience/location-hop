@@ -1,8 +1,9 @@
 {
   "name": "location-hop",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "look up town names",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -11,7 +12,8 @@
   "author": "@aboynejames",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^12.6.2"
+    "better-sqlite3": "^12.6.2",
+    "electron-log": "^5.4.3"
   },
   "devDependencies": {
     "vitest": "^4.0.18"

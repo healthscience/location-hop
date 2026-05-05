@@ -1,13 +1,16 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+import Database from 'better-sqlite3';
+import path from 'path';
+import os from 'os';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const getDatabasePath = () => {
     // 1. Construct the standard HOP models path
     let homedir = os.homedir();
     let modelsPath = '';
-
     if (os.platform() === 'win32') {
         let splitLast = homedir.split('\\');
         let username = splitLast[splitLast.length - 1];
@@ -24,7 +27,8 @@ const getDatabasePath = () => {
     }
 
     // 3. Fallback to the local node_modules version (Dev mode / Isolated use)
-    return path.join(__dirname, '../cities.db');
+    const localDbPath = path.join(__dirname, '../cities.db');
+    return localDbPath;
 };
 
 const DB_FILE = getDatabasePath();
@@ -46,8 +50,12 @@ function init() {
  * @returns {Array} - Array of matching cities
  */
 function searchCities(query, limit = 10) {
+    if (!query || query.trim() === '') return [];
     init();
     
+    // Add wildcard for FTS5 partial matching
+    const ftsQuery = query.trim().endsWith('*') ? query.trim() : `${query.trim()}*`;
+
     // Using FTS5 MATCH for lightning-fast search
     // We join with the main cities table to get full details
     const stmt = db.prepare(`
@@ -61,7 +69,7 @@ function searchCities(query, limit = 10) {
         LIMIT ?
     `);
 
-    return stmt.all(query, limit);
+    return stmt.all(ftsQuery, limit);
 }
 
 /**
@@ -74,7 +82,8 @@ function close() {
     }
 }
 
-module.exports = {
+export {
     searchCities,
+    getDatabasePath,
     close
 };
